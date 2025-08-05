@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный гид по охране труда для KEP-бизнеса</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: A task-oriented SPA designed for KEP business owners. The structure guides the user from understanding the 'Why' (risks and importance) to the 'How' (the core safety cycle, actionable checklists, key roles, and documentation requirements). This approach breaks down complex regulations into a logical, digestible flow, prioritizing user understanding and action over the source report's academic structure. -->
+    <!-- Visualization & Content Choices: Report Info: Core safety cycle (Assessment -> Instructions -> Briefings) -> Goal: Organize/Inform -> Viz: Interactive HTML/CSS diagram -> Interaction: Click to reveal details -> Justification: Visually explains the core process better than text. | Report Info: List of required briefings (Table 1) -> Goal: Organize/Action -> Viz: Filterable accordion cards -> Interaction: Filter by type, click to expand -> Justification: Manages a large data table, making it digestible and user-focused. | Report Info: Required staff percentages (Table 2) -> Goal: Inform/Compare -> Viz: Chart.js Donut Charts -> Interaction: Hover tooltips -> Justification: Quick visual comprehension of key metrics. | Report Info: Retention periods (Table 3) -> Goal: Inform/Reference -> Viz: Styled HTML table -> Interaction: None -> Justification: Clear, structured presentation for reference data. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f5;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 280px;
+            max-height: 280px;
+        }
+        .section-title {
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            color: #1e293b; /* slate-800 */
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .section-subtitle {
+            font-size: 1.125rem; /* 18px */
+            color: #475569; /* slate-600 */
+            margin-bottom: 3rem;
+            text-align: center;
+            max-width: 48rem; /* max-w-3xl */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+            padding: 1.5rem; /* p-6 */
+            transition: all 0.3s ease-in-out;
+            border: 1px solid #e2e8f0;
+        }
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* rounded-full */
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0f766e; /* teal-700 */
+        }
+        .active-nav {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+        }
+        .active-nav:hover {
+            background-color: #0f766e; /* teal-700 */
+            color: white;
+        }
+        .cycle-item.active {
+             border-color: #0d9488; /* teal-600 */
+             box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+        }
+        .moldovan-text {
+            font-size: 0.75rem; /* text-xs */
+            color: #64748b; /* slate-500 */
+            display: block;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <header class="bg-white/90 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-teal-700">KEP Охрана Труда</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-2">
+                        <a href="#intro" class="nav-link">Введение</a>
+                        <a href="#cycle" class="nav-link">Цикл безопасности</a>
+                        <a href="#checklist" class="nav-link">Чек-лист</a>
+                        <a href="#roles" class="nav-link">Ключевые роли</a>
+                        <a href="#docs" class="nav-link">Документация</a>
+                        <a href="#recommendations" class="nav-link">Рекомендации</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-center text-slate-900 tracking-tight">
+                    Охрана труда в KEP-бизнесе: <br class="hidden sm:block"><span class="text-teal-700">От обязанности к преимуществу</span>
+                    <span class="moldovan-text">Securitatea Muncii în Afacerea KEP: De la Obligație la Avantaj</span>
+                </h1>
+                <p class="section-subtitle mt-6">
+                    Соблюдение правил охраны труда — это не просто юридическое обязательство, а решающий фактор для здоровья сотрудников, сокращения издержек и повышения конкурентоспособности вашей компании. Мы поможем превратить требования закона в ваш стратегический актив.
+                    <span class="moldovan-text">Respectarea normelor de securitate a muncii nu este doar o obligație legală, ci un factor decisiv pentru sănătatea angajaților, reducerea costurilor și creșterea competitivității companiei dumneavoastră.</span>
+                </p>
+                
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div class="card">
+                        <div class="text-4xl text-teal-600 mb-3">🏋️</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Физические нагрузки
+                            <span class="moldovan-text">Efort Fizic</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600">Сотрудники ежедневно поднимают до <span class="font-bold text-slate-800">300 посылок</span>, что ведет к риску травм опорно-двигательного аппарата.</p>
+                    </div>
+                    <div class="card">
+                        <div class="text-4xl text-teal-600 mb-3">🚚</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Риски на дороге
+                            <span class="moldovan-text">Riscuri în Trafic</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600">Большинство ДТП с фургонами связано с <span class="font-bold text-slate-800">ошибками водителей</span> под давлением времени.</p>
+                    </div>
+                    <div class="card">
+                        <div class="text-4xl text-teal-600 mb-3">⚖️</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Юридические риски
+                            <span class="moldovan-text">Riscuri Juridice</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600">Неполная документация и отсутствие инструктажей ведут к <span class="font-bold text-slate-800">серьезным штрафам</span> от BG Verkehr.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cycle" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="section-title">
+                    Цикл Безопасности: Ваш Фундамент
+                    <span class="moldovan-text">Ciclul de Securitate: Fundamentul Dvs.</span>
+                </h2>
+                <p class="section-subtitle">
+                    Эффективная охрана труда — это не разовое мероприятие, а непрерывный, циклический процесс. Эти три элемента взаимосвязаны и являются основой для культуры безопасности в вашей компании. Кликните на любой шаг, чтобы узнать подробности.
+                    <span class="moldovan-text">Securitatea muncii eficientă nu este un eveniment unic, ci un proces continuu. Aceste trei elemente sunt interconectate și formează baza culturii de siguranță a companiei dumneavoastră.</span>
+                </p>
+
+                <div class="lg:flex lg:items-center lg:gap-12">
+                    <div class="lg:w-1/2 grid grid-cols-1 gap-6">
+                        <div id="cycle-gfb" class="cycle-item card cursor-pointer p-6 active">
+                            <h3 class="font-bold text-xl text-slate-800">
+                                1. Оценка рисков (Gefährdungsbeurteilung)
+                                <span class="moldovan-text">1. Evaluarea Riscurilor</span>
+                            </h3>
+                            <p class="text-md mt-2">Систематический анализ всех потенциальных опасностей на каждом рабочем месте — от склада до маршрута водителя. Это основа всех дальнейших действий.</p>
+                        </div>
+                        <div id="cycle-bwa" class="cycle-item card cursor-pointer p-6">
+                            <h3 class="font-bold text-xl text-slate-800">
+                                2. Производственные инструкции (Betriebsanweisungen)
+                                <span class="moldovan-text">2. Instrucțiuni de Operare</span>
+                            </h3>
+                            <p class="text-md mt-2">Разработка четких и понятных правил безопасной работы для каждой задачи, основанных на результатах оценки рисков.</p>
+                        </div>
+                        <div id="cycle-uwg" class="cycle-item card cursor-pointer p-6">
+                            <h3 class="font-bold text-xl text-slate-800">
+                                3. Инструктажи (Unterweisungen)
+                                <span class="moldovan-text">3. Instruiri</span>
+                            </h3>
+                            <p class="text-md mt-2">Практическое обучение сотрудников правилам и процедурам, а также проверка их понимания. Проводится регулярно и документируется.</p>
+                        </div>
+                    </div>
+                    <div class="lg:w-1/2 mt-8 lg:mt-0">
+                        <div id="cycle-details" class="card bg-slate-50 p-8 min-h-[200px]">
+                            <h3 id="details-title" class="font-bold text-2xl text-teal-800"></h3>
+                            <p id="details-text" class="mt-4 text-lg text-slate-700"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="checklist" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="section-title">
+                    Интерактивный чек-лист инструктажей
+                    <span class="moldovan-text">Lista de verificare interactivă a instruirilor</span>
+                </h2>
+                <p class="section-subtitle">
+                    Здесь собраны все обязательные инструктажи для KEP-отрасли. Используйте фильтры для навигации и нажимайте на карточки, чтобы раскрыть подробности о содержании, частоте и правовой основе каждого инструктажа.
+                    <span class="moldovan-text">Aici sunt toate instruirile obligatorii pentru sectorul KEP. Folosiți filtrele pentru a naviga și faceți clic pe carduri pentru detalii despre conținut, frecvență și baza legală.</span>
+                </p>
+
+                <div class="flex justify-center space-x-4 mb-10">
+                    <button id="filter-all" class="px-6 py-2 rounded-full font-semibold text-white bg-teal-600 shadow-md">
+                        Все темы
+                        <span class="moldovan-text inline-block">Toate temele</span>
+                    </button>
+                    <button id="filter-general" class="px-6 py-2 rounded-full font-semibold bg-white text-slate-700 shadow-sm border">
+                        Общие
+                        <span class="moldovan-text inline-block">Generale</span>
+                    </button>
+                    <button id="filter-kep" class="px-6 py-2 rounded-full font-semibold bg-white text-slate-700 shadow-sm border">
+                        KEP-специфичные
+                        <span class="moldovan-text inline-block">Specifice KEP</span>
+                    </button>
+                </div>
+
+                <div id="checklist-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+        </section>
+
+        <section id="roles" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="section-title">
+                    Ключевые роли в вашей команде
+                    <span class="moldovan-text">Roluri Cheie în Echipa Dvs.</span>
+                </h2>
+                <p class="section-subtitle">
+                    Эффективная охрана труда опирается на специально обученных сотрудников. Эти три роли обязательны по закону и формируют основу вашей внутренней системы безопасности.
+                    <span class="moldovan-text">O securitate eficientă a muncii se bazează pe angajați special instruiți. Aceste trei roluri sunt obligatorii prin lege.</span>
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="card text-center flex flex-col items-center">
+                        <div class="text-4xl mb-4">🛡️</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Уполномоченный по безопасности (SiBe)
+                            <span class="moldovan-text">Responsabil cu Securitatea (SiBe)</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600 flex-grow">Поддерживает руководство, следит за безопасностью на местах, сообщает о недостатках. Служит примером для коллег.</p>
+                        <p class="mt-4 font-bold text-teal-700 text-lg">Обязателен от 21 сотрудника</p>
+                    </div>
+                    
+                    <div class="card text-center flex flex-col items-center">
+                        <div class="text-4xl mb-4">➕</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Сотрудник первой помощи (Ersthelfer)
+                            <span class="moldovan-text">Personal de Prim Ajutor (Ersthelfer)</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600 flex-grow">Оказывает квалифицированную первую помощь при несчастных случаях, минимизируя последствия травм.</p>
+                        <div class="chart-container mt-4">
+                            <canvas id="ersthelferChart"></canvas>
+                        </div>
+                         <p class="text-sm text-slate-500 mt-2">Необходимый процент от штата</p>
+                    </div>
+
+                    <div class="card text-center flex flex-col items-center">
+                        <div class="text-4xl mb-4">🔥</div>
+                        <h3 class="text-xl font-semibold text-slate-800">
+                            Помощник по пожарной безопасности
+                            <span class="moldovan-text">Ajutor pentru Pompieri</span>
+                        </h3>
+                        <p class="mt-2 text-slate-600 flex-grow">Борется с возгораниями на начальной стадии и руководит эвакуацией, защищая жизни и имущество.</p>
+                        <div class="chart-container mt-4">
+                            <canvas id="brandschutzhelferChart"></canvas>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-2">Необходимый процент от штата</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="docs" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="section-title">
+                    Документация и сроки хранения
+                    <span class="moldovan-text">Documentația și Termenele de Păstrare</span>
+                </h2>
+                <p class="section-subtitle">
+                    Полная и корректная документация — ваш главный аргумент при проверках и ключ к страховой защите. Ниже приведены основные документы и обязательные сроки их хранения.
+                    <span class="moldovan-text">Documentația completă și corectă este principalul dvs. argument în inspecții și cheia protecției asigurărilor.</span>
+                </p>
+                
+                <div class="overflow-x-auto bg-white rounded-xl shadow-md border">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Тип документа<span class="moldovan-text block">Tipul documentului</span>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Срок хранения<span class="moldovan-text block">Termen de păstrare</span>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Правовая основа / Рекомендация<span class="moldovan-text block">Baza legală / Recomandare</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="docs-table-body" class="bg-white divide-y divide-slate-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="py-20 bg-teal-800 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="section-title !text-white">
+                    Наши рекомендации для успеха
+                    <span class="moldovan-text text-teal-200">Recomandările Noastre pentru Succes</span>
+                </h2>
+                <p class="section-subtitle !text-teal-200">
+                    Охрана труда — это инвестиция. Внедрите эти практики, чтобы построить устойчивую культуру безопасности и повысить эффективность вашего бизнеса.
+                    <span class="moldovan-text text-teal-200">Securitatea muncii este o investiție. Implementați aceste practici pentru a construi o cultură a siguranței și pentru a crește eficiența afacerii.</span>
+                </p>
+                
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white/10 p-6 rounded-xl">
+                        <h3 class="font-semibold text-lg text-white">
+                            Систематическая оценка рисков
+                            <span class="moldovan-text text-teal-200">Evaluare Sistematică a Riscurilor</span>
+                        </h3>
+                        <p class="mt-2 text-teal-200">Регулярно обновляйте оценку рисков, особенно при внедрении новых процессов или транспортных средств.</p>
+                    </div>
+                    <div class="bg-white/10 p-6 rounded-xl">
+                        <h3 class="font-semibold text-lg text-white">
+                            Позитивная культура безопасности
+                            <span class="moldovan-text text-teal-200">Cultură Pozitivă de Securitate</span>
+                        </h3>
+                        <p class="mt-2 text-teal-200">Создайте атмосферу, в которой сотрудники не боятся сообщать об опасностях и "почти несчастных случаях".</p>
+                    </div>
+                    <div class="bg-white/10 p-6 rounded-xl">
+                        <h3 class="font-semibold text-lg text-white">
+                            Используйте цифровые решения
+                            <span class="moldovan-text text-teal-200">Utilizați Soluții Digitale</span>
+                        </h3>
+                        <p class="mt-2 text-teal-200">Внедряйте ПО для ведения документации, чтобы повысить эффективность и обеспечить юридическую защиту.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-800 text-white">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-400">
+            <p>
+                Этот интерактивный гид служит для информационных целей и не заменяет юридическую консультацию или официальное заключение BG Verkehr.
+                <span class="moldovan-text text-slate-400">Acest ghid interactiv este doar informativ și nu înlocuiește consultanța juridică oficială sau o declarație oficială de la BG Verkehr.</span>
+            </p>
+            <p class="mt-2">&copy; 2025 KEP Охрана Труда. Все права защищены.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const cycleData = {
+        gfb: {
+            title: "1. Оценка рисков",
+            text: "Это основа основ. Мы систематически выявляем и оцениваем все потенциальные опасности для каждого рабочего места: от эргономики при подъеме посылок до рисков на конкретных маршрутах. Результат — четкий план необходимых защитных мер."
+        },
+        bwa: {
+            title: "2. Производственные инструкции",
+            text: "На основе оценки рисков мы создаем конкретные, понятные и юридически корректные инструкции для безопасного выполнения работ: как правильно крепить груз, как безопасно пользоваться погрузочной платформой и т.д. Эти документы должны быть всегда доступны сотрудникам."
+        },
+        uwg: {
+            title: "3. Инструктажи",
+            text: "Мы доносим содержание инструкций до ваших сотрудников. Это не просто лекция, а практическое обучение с проверкой понимания. Инструктажи проводятся регулярно (минимум раз в год) и при любых изменениях в работе, и каждый из них должен быть задокументирован."
+        }
+    };
+
+    const cycleItems = document.querySelectorAll('.cycle-item');
+    const detailsTitle = document.getElementById('details-title');
+    const detailsText = document.getElementById('details-text');
+    
+    function updateCycleDetails(key) {
+        detailsTitle.textContent = cycleData[key].title;
+        detailsText.textContent = cycleData[key].text;
+    }
+
+    cycleItems.forEach(item => {
+        item.addEventListener('click', () => {
+            cycleItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const dataKey = item.id.split('-')[1];
+            updateCycleDetails(dataKey);
+        });
+    });
+    updateCycleDetails('gfb');
+
+
+    const checklistData = [
+        { type: 'general', title: 'Общие обязанности по охране труда', content: 'Использование СИЗ, сообщение об опасностях, участие в инструктажах.', basis: 'ArbSchG §12, DGUV V1', freq: 'Мин. 1 раз в год' },
+        { type: 'general', title: 'Первая помощь', content: 'Поведение при несчастных случаях, ведение журнала первой помощи.', basis: 'ArbSchG §10, DGUV V1', freq: 'Каждые 2 года' },
+        { type: 'general', title: 'Противопожарная защита', content: 'Поведение в случае пожара, пути эвакуации, использование огнетушителей.', basis: 'ArbSchG §10, ASR A2.2', freq: 'Мин. 1 раз в год' },
+        { type: 'general', title: 'Подъем и перенос тяжестей', content: 'Эргономичные методы, использование вспомогательных средств для предотвращения травм.', basis: 'LastenhandhabV', freq: 'Мин. 1 раз в год' },
+        { type: 'kep', title: 'Крепление груза', content: 'Соблюдение веса и нагрузок, правильное размещение груза, использование стяжных ремней.', basis: 'VDI 2700', freq: 'Мин. 1 раз в год' },
+        { type: 'kep', title: 'Безопасная погрузка и разгрузка', content: 'Защита от откатывания ТС, безопасное открытие бортов, безопасные расстояния.', basis: 'DGUV V70 §37', freq: 'Мин. 1 раз в год' },
+        { type: 'kep', title: 'Контроль перед выездом', content: 'Систематическая проверка ТС: шины, тормоза, освещение.', basis: 'DGUV Regel 114-006', freq: 'Мин. 1 раз в год' },
+        { type: 'kep', title: 'Эргономика при доставке', content: 'Специфические техники подъема посылок, избегание вынужденных поз.', basis: 'ArbSchG, PostG', freq: 'Мин. 1 раз в год' },
+        { type: 'kep', title: 'Давление времени и стресс', content: 'Стратегии управления стрессом, приоритет безопасности над скоростью.', basis: 'ArbSchG', freq: 'Мин. 1 раз в год' },
+    ];
+
+    const checklistContainer = document.getElementById('checklist-container');
+    const filterButtons = {
+        all: document.getElementById('filter-all'),
+        general: document.getElementById('filter-general'),
+        kep: document.getElementById('filter-kep'),
+    };
+
+    function renderChecklist(filter = 'all') {
+        checklistContainer.innerHTML = '';
+        const filteredData = filter === 'all' ? checklistData : checklistData.filter(item => item.type === filter);
+        
+        filteredData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card cursor-pointer';
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-lg text-slate-800">${item.title}</h3>
+                    <span class="text-teal-500 transform transition-transform duration-300 text-2xl font-light">+</span>
+                </div>
+                <div class="mt-4 border-t pt-4 text-slate-600 text-sm hidden">
+                    <p class="mb-3">${item.content}</p>
+                    <p><strong class="font-medium text-slate-700">Основа:</strong> ${item.basis}</p>
+                    <p><strong class="font-medium text-slate-700">Частота:</strong> ${item.freq}</p>
+                </div>
+            `;
+            checklistContainer.appendChild(card);
+
+            card.addEventListener('click', () => {
+                const content = card.querySelector('.hidden, .block');
+                const icon = card.querySelector('span');
+                const isHidden = content.classList.contains('hidden');
+                
+                content.classList.toggle('hidden');
+                content.classList.toggle('block');
+                icon.textContent = isHidden ? '−' : '+';
+                icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        });
+    }
+
+    Object.keys(filterButtons).forEach(key => {
+        filterButtons[key].addEventListener('click', () => {
+            Object.values(filterButtons).forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white', 'text-slate-700', 'shadow-sm', 'border');
+            });
+            filterButtons[key].classList.add('bg-teal-600', 'text-white', 'shadow-md');
+            filterButtons[key].classList.remove('bg-white', 'text-slate-700', 'shadow-sm', 'border');
+            renderChecklist(key);
+        });
+    });
+
+    renderChecklist();
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.raw}%`;
+                    }
+                },
+                backgroundColor: '#1e293b',
+                titleColor: '#f1f5f9',
+                bodyColor: '#f1f5f9',
+                padding: 10,
+                cornerRadius: 4,
+            }
+        }
+    };
+
+    new Chart(document.getElementById('ersthelferChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Обучены', 'Остальные'],
+            datasets: [{
+                data: [10, 90],
+                backgroundColor: ['#0d9488', '#e2e8f0'],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 4,
+            }]
+        },
+        options: chartOptions
+    });
+
+    new Chart(document.getElementById('brandschutzhelferChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Обучены', 'Остальные'],
+            datasets: [{
+                data: [5, 95],
+                backgroundColor: ['#0d9488', '#e2e8f0'],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 4,
+            }]
+        },
+        options: chartOptions
+    });
+
+    const docsData = [
+        { doc: 'Протоколы инструктажей', frist: '2 года', basis: 'DGUV V1, ArbSchG' },
+        { doc: 'Журнал первой помощи (Verbandbuch)', frist: '5 лет', basis: 'DGUV V1 §24' },
+        { doc: 'Уведомления о несчастных случаях', frist: '5 лет', basis: 'Рекомендация BG' },
+        { doc: 'Документация рабочего времени', frist: '2-10 лет', basis: 'ArbZG, HGB, AO' },
+        { doc: 'Оценки рисков (неактуальные)', frist: '10 лет', basis: 'Рекомендация' },
+    ];
+
+    const docsTableBody = document.getElementById('docs-table-body');
+    docsData.forEach(item => {
+        const row = docsTableBody.insertRow();
+        row.className = "hover:bg-slate-50 transition-colors";
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${item.doc}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-teal-700">${item.frist}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${item.basis}</td>
+        `;
+    });
+    
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 80) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active-nav');
+            if (link.getAttribute('href')?.substring(1) === current) {
+                link.classList.add('active-nav');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
